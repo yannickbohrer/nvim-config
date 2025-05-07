@@ -162,6 +162,7 @@ return {
 			--
 			-- But for many setups, the LSP (`tsserver`) will work just fine
 			clangd = {},
+			gopls = {},
 			ts_ls = {},
 			ruff = {},
 			pylsp = {

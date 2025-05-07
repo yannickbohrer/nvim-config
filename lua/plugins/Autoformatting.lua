@@ -42,6 +42,7 @@ return {
 					"graphql",
 					"md",
 					"txt",
+					"go",
 				},
 			}),
 			formatting.stylua,
