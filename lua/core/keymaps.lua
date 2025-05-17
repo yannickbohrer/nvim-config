@@ -43,16 +43,16 @@ vim.keymap.set("n", "<leader>se", "<C-w>=", opts) -- make split windows equal wi
 vim.keymap.set("n", "<leader>xs", ":close<CR>", opts) -- close current split window
 
 -- navigation between splits
-vim.keymap.set("n", "<C-k>", ":wincmd k<CR>", opts)
-vim.keymap.set("n", "<C-j>", ":wincmd j<CR>", opts)
-vim.keymap.set("n", "<C-h>", ":wincmd h<CR>", opts)
-vim.keymap.set("n", "<C-l>", ":wincmd l<CR>", opts)
+vim.keymap.set("n", "<Up>", ":wincmd k<CR>", opts)
+vim.keymap.set("n", "<Down>", ":wincmd j<CR>", opts)
+vim.keymap.set("n", "<Left>", ":wincmd h<CR>", opts)
+vim.keymap.set("n", "<Right>", ":wincmd l<CR>", opts)
 
 -- resize splits with arrows
-vim.keymap.set("n", "<Up>", ":resize -2<CR>", opts)
-vim.keymap.set("n", "<Down>", ":resize +2<CR>", opts)
-vim.keymap.set("n", "<Left>", ":vertical resize -2<CR>", opts)
-vim.keymap.set("n", "<Right>", ":vertical resize +2<CR>", opts)
+-- vim.keymap.set("n", "", ":resize -2<CR>", opts)
+-- vim.keymap.set("n", "", ":resize +2<CR>", opts)
+-- vim.keymap.set("n", "", ":vertical resize -2<CR>", opts)
+-- vim.keymap.set("n", "", ":vertical resize +2<CR>", opts)
 
 -- toggle line wrapping
 vim.keymap.set("n", "<leader>lw", "<cmd>set wrap!<CR>", opts) -- make really long lines visible through wrapping

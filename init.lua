@@ -23,4 +23,5 @@ require("lazy").setup({
 	require("plugins.Autoformatting"),
 	require("plugins.Gitsigns"),
 	require("plugins.Alpha"),
+	require("plugins.vim-tmux-navigator"),
 })
