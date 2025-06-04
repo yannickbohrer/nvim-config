@@ -14,6 +14,7 @@ return {
 			ensure_installed = {
 				"checkmake",
 				"prettier",
+				"prettierd",
 				"stylua",
 				"eslint_d",
 				"shfmt",
