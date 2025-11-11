@@ -70,7 +70,7 @@ return {
 			ts_ls = {
 				-- Prevent attaching inside Deno projects
 				root_dir = util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git"),
-				single_file_support = false,
+				single_file_support = true,
 				settings = {
 					javascript = { inlayHints = { includeInlayParameterNameHints = "all" } },
 					typescript = { inlayHints = { includeInlayParameterNameHints = "all" } },
@@ -156,7 +156,17 @@ return {
 					},
 				},
 			},
-			clangd = {},
+			clangd = {
+				cmd = {
+					"clangd",
+					"--compile-commands-dir=build",
+					"--query-driver=/usr/bin/g++*,/usr/bin/clang++*,/usr/bin/c++*,/usr/bin/x86_64-linux-gnu-g++*",
+					"--background-index",
+					"--clang-tidy",
+					"--header-insertion=iwyu",
+				},
+				root_dir = require("lspconfig.util").root_pattern("compile_commands.json", "CMakeLists.txt", ".git"),
+			},
 
 			-- === Scripting / DevOps ===
 			bashls = {},
