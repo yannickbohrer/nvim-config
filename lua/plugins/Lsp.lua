@@ -1,13 +1,14 @@
 return {
 	"neovim/nvim-lspconfig",
 	dependencies = {
-		-- You can unpin these if you want the latest, but your pinned versions are fine.
-		{ "williamboman/mason.nvim", version = "1.11.0", config = true },
-		{ "williamboman/mason-lspconfig.nvim", version = "1.32.0" },
+		{ "williamboman/mason.nvim", config = true },
+		{ "williamboman/mason-lspconfig.nvim" },
 		{ "j-hui/fidget.nvim", opts = {} },
 		"hrsh7th/cmp-nvim-lsp",
 		"MunifTanjim/nui.nvim",
+		"p00f/clangd_extensions.nvim",
 	},
+	event = { "BufReadPre", "BufNewFile" },
 	config = function()
 		vim.api.nvim_create_autocmd("LspAttach", {
 			group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
@@ -26,9 +27,9 @@ return {
 				map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
 				map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction", { "n", "x" })
 				map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
+				map("<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", "Switch Source/Header (C/C++)")
 
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
-
 				if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
 					local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -41,198 +42,72 @@ return {
 						group = highlight_augroup,
 						callback = vim.lsp.buf.clear_references,
 					})
-					vim.api.nvim_create_autocmd("LspDetach", {
-						group = vim.api.nvim_create_augroup("kickstart-lsp-detach", { clear = true }),
-						callback = function(event2)
-							vim.lsp.buf.clear_references()
-							vim.api.nvim_clear_autocmds({ group = "kickstart-lsp-highlight", buffer = event2.buf })
-						end,
-					})
-				end
-
-				if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-					map("<leader>th", function()
-						vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-					end, "[T]oggle Inlay [H]ints")
 				end
 			end,
 		})
 
 		local capabilities = vim.lsp.protocol.make_client_capabilities()
 		capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
+		capabilities.offsetEncoding = { "utf-16" }
 
-		-- Put this where your `local servers` table is
 		local util = require("lspconfig.util")
-
 		local servers = {
-			-- === Web / JS / TS ===
-			-- Typescript/JS (nvim-lspconfig renamed tsserver -> ts_ls)
-			ts_ls = {
-				-- Prevent attaching inside Deno projects
-				root_dir = util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git"),
-				single_file_support = true,
-				settings = {
-					javascript = { inlayHints = { includeInlayParameterNameHints = "all" } },
-					typescript = { inlayHints = { includeInlayParameterNameHints = "all" } },
-				},
-			},
-
-			-- If you use Deno projects, this enables Deno LSP only when it detects them.
+			ts_ls = {},
+			angularls = {},
 			denols = {
 				root_dir = util.root_pattern("deno.json", "deno.jsonc"),
-				init_options = { lint = true, unstable = true },
 			},
-
-			-- ESLint (attach only where an eslint config exists)
-			eslint = {
-				root_dir = util.root_pattern(
-					".eslintrc",
-					".eslintrc.js",
-					".eslintrc.cjs",
-					".eslintrc.json",
-					".eslintrc.yaml",
-					".eslintrc.yml",
-					"eslint.config.js",
-					"eslint.config.mjs",
-					"eslint.config.cjs",
-					"eslint.config.ts"
-				),
-			},
-
-			-- Tailwind CSS (helpful for React/Vue/Svelte)
-			tailwindcss = {
-				filetypes = {
-					"html",
-					"css",
-					"scss",
-					"sass",
-					"postcss",
-					"javascript",
-					"javascriptreact",
-					"typescript",
-					"typescriptreact",
-					"vue",
-					"svelte",
-					"astro",
-					"templ", -- go templ
-				},
-			},
-
+			eslint = {},
+			tailwindcss = {},
 			cssls = {},
-			html = { filetypes = { "html" } },
+			html = {},
 			jsonls = {},
 			yamlls = {},
-			marksman = {}, -- Markdown
-			emmet_ls = { -- optional, quick HTML/TSX expand
-				filetypes = { "html", "css", "scss", "sass", "javascriptreact", "typescriptreact", "vue", "svelte" },
-			},
-
-			-- === Python ===
-			ruff = {}, -- fast linting/format hints
-			pylsp = {
-				settings = {
-					pylsp = {
-						plugins = {
-							pyflakes = { enabled = false },
-							pycodestyle = { enabled = false },
-							autopep8 = { enabled = false },
-							yapf = { enabled = false },
-							mccabe = { enabled = false },
-							pylsp_mypy = { enabled = false },
-							pylsp_black = { enabled = false },
-							pylsp_isort = { enabled = false },
-						},
-					},
-				},
-			},
-
-			-- === Go / Rust / C/C++ ===
-			gopls = {},
-			rust_analyzer = {
-				settings = {
-					["rust-analyzer"] = {
-						cargo = { allFeatures = true },
-						check = { command = "clippy" },
-					},
-				},
-			},
-			clangd = {
-				cmd = {
-					"clangd",
-					"--compile-commands-dir=build",
-					"--query-driver=/usr/bin/g++*,/usr/bin/clang++*,/usr/bin/c++*,/usr/bin/x86_64-linux-gnu-g++*",
-					"--background-index",
-					"--clang-tidy",
-					"--header-insertion=iwyu",
-				},
-				root_dir = require("lspconfig.util").root_pattern("compile_commands.json", "CMakeLists.txt", ".git"),
-			},
-
-			-- === Scripting / DevOps ===
-			bashls = {},
-			dockerls = {},
-			docker_compose_language_service = {},
-			terraformls = {},
-			tflint = {},
-
-			-- === Databases / Data ===
-			sqlls = {}, -- or use "sqls" if you prefer
-			taplo = {}, -- TOML
-
-			-- === Lua (Neovim) ===
 			lua_ls = {
 				settings = {
 					Lua = {
 						completion = { callSnippet = "Replace" },
-						runtime = { version = "LuaJIT" },
-						workspace = {
-							checkThirdParty = false,
-							library = {
-								"${3rd}/luv/library",
-								unpack(vim.api.nvim_get_runtime_file("", true)),
-							},
-							telemetry = { enable = false },
-							diagnostics = { disable = { "missing-fields" } },
-						},
+						diagnostics = { disable = { "missing-fields" } },
 					},
 				},
 			},
-
-			-- === Frameworks / SPA (optional: enable if you use them) ===
-			svelte = {},
-			volar = { -- Vue
-				init_options = { typescript = { tsdk = "" } }, -- tsdk auto if empty; set if you use pnpm workspaces
+			bashls = {},
+			clangd = {
+				cmd = {
+					"clangd",
+					"--background-index",
+					"--clang-tidy",
+					"--header-insertion=iwyu",
+					"--completion-style=detailed",
+					"--function-arg-placeholders",
+					"--fallback-style=llvm",
+					"--query-driver=/usr/bin/g++,/usr/bin/gcc,/usr/bin/clang++,/usr/bin/clang",
+					"--log=verbose",
+				},
+				init_options = {
+					usePlaceholders = true,
+					completeUnimported = true,
+					clangdFileStatus = true,
+				},
 			},
-			graphql = {},
-
-			-- === Other popular languages (enable if you use them) ===
-			phpactor = {}, -- PHP (alternative: intelephense)
-			ruby_lsp = {}, -- Ruby
-			elixirls = {}, -- Elixir (requires elixir-ls in Mason)
-			kotlin_language_server = {},
-			zls = {}, -- Zig
-			hls = {}, -- Haskell
+			gopls = {},
+			rust_analyzer = {},
+			ruff = {},
+			pylsp = {},
 		}
 
 		require("mason").setup()
-
 		require("mason-lspconfig").setup({
 			ensure_installed = vim.tbl_keys(servers),
-			-- mason-lspconfig v1.x: keep these if you really want; v2 changed options.
-			automatic_installation = false,
-			automatic_enable = false,
-			handlers = {
-				function(server_name)
-					local cfg = servers[server_name] or {}
-					cfg.capabilities = vim.tbl_deep_extend("force", {}, capabilities, cfg.capabilities or {})
-					-- NEW: define the config in core
-					vim.lsp.config(server_name, cfg)
-					-- Do NOT call lspconfig.setup here.
-				end,
-			},
 		})
 
-		-- Finally enable all the servers you've defined
+		for server, server_cfg in pairs(servers) do
+			server_cfg.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server_cfg.capabilities or {})
+			vim.lsp.config(server, server_cfg)
+		end
+
+		require("clangd_extensions").setup({})
+
 		vim.lsp.enable(vim.tbl_keys(servers))
 	end,
 }
