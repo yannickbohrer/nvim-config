@@ -81,7 +81,7 @@ return {
 					"--completion-style=detailed",
 					"--function-arg-placeholders",
 					"--fallback-style=llvm",
-					"--query-driver=/usr/bin/g++,/usr/bin/gcc,/usr/bin/clang++,/usr/bin/clang",
+					"--query-driver=/usr/bin/g++,/usr/bin/gcc,/usr/bin/clang++,/usr/bin/clang,/usr/bin/c++,/usr/bin/cc",
 					"--log=verbose",
 				},
 				init_options = {
@@ -94,6 +94,11 @@ return {
 			rust_analyzer = {},
 			ruff = {},
 			pylsp = {},
+			kotlin_language_server = {
+				init_options = {
+					storagePath = vim.fn.stdpath("cache") .. "/kotlin_language_server",
+				},
+			},
 		}
 
 		require("mason").setup()

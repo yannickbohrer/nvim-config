@@ -16,6 +16,7 @@ return {
 				"stylua",
 				"shfmt",
 				"clang-format",
+				"ktlint",
 			},
 		})
 
@@ -27,6 +28,7 @@ return {
 			formatting.stylua,
 			formatting.shfmt,
 			formatting.clang_format,
+			formatting.ktlint,
 		}
 
 		null_ls.setup({
