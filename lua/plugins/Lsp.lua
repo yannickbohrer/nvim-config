@@ -30,7 +30,7 @@ return {
 				map("<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", "Switch Source/Header (C/C++)")
 
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
-				if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
 					local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 						buffer = event.buf,
@@ -93,7 +93,34 @@ return {
 			gopls = {},
 			rust_analyzer = {},
 			ruff = {},
-			pylsp = {},
+			pyright = {
+				settings = {
+					pyright = { autoImportCompletion = true },
+					python = {
+						analysis = {
+							autoSearchPaths = true,
+							diagnosticMode = "openFilesOnly",
+							useLibraryCodeForTypes = true,
+							typeCheckingMode = "basic",
+						},
+					},
+				},
+			},
+			jdtls = {
+				settings = {
+					java = {
+						configuration = { updateBuildConfiguration = "interactive" },
+						eclipse = { downloadSources = true },
+						maven = { downloadSources = true },
+						implementationsCodeLens = { enabled = true },
+						referencesCodeLens = { enabled = true },
+						format = { enabled = false }, -- handled by google-java-format via none-ls
+					},
+				},
+				init_options = {
+					workspace = vim.fn.stdpath("data") .. "/jdtls-workspace/" .. vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t"),
+				},
+			},
 			kotlin_language_server = {
 				init_options = {
 					storagePath = vim.fn.stdpath("cache") .. "/kotlin_language_server",

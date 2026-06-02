@@ -17,28 +17,34 @@ return {
 				"shfmt",
 				"clang-format",
 				"ktlint",
+				"google-java-format",
+				"ruff",
 			},
 		})
 
 		local sources = {
 			diagnostics.checkmake,
-			formatting.prettierd.with({
+			formatting.prettier.with({
 				filetypes = { "javascript", "typescript", "css", "html", "json", "yaml", "markdown" },
 			}),
 			formatting.stylua,
 			formatting.shfmt,
 			formatting.clang_format,
 			formatting.ktlint,
+			formatting.google_java_format,
+			require("none-ls.formatting.ruff_format"),
 		}
+
+		-- One persistent group; clear per-buffer to avoid duplicate format-on-save
+		local fmt_group = vim.api.nvim_create_augroup("LspFormatting", { clear = false })
 
 		null_ls.setup({
 			sources = sources,
 			on_attach = function(client, bufnr)
-				if client.supports_method("textDocument/formatting") then
-					local group = vim.api.nvim_create_augroup("LspFormatting", {})
-					vim.api.nvim_clear_autocmds({ group = group, buffer = bufnr })
+				if client:supports_method("textDocument/formatting") then
+					vim.api.nvim_clear_autocmds({ group = fmt_group, buffer = bufnr })
 					vim.api.nvim_create_autocmd("BufWritePre", {
-						group = group,
+						group = fmt_group,
 						buffer = bufnr,
 						callback = function()
 							vim.lsp.buf.format({ bufnr = bufnr, async = false })
