@@ -16,3 +16,11 @@ vim.o.cmdheight = 1 -- more height for cmd line
 vim.o.smartindent = true -- makes indenting smarter
 
 vim.opt.termguicolors = true -- set termguicolors to enable hightlight groups
+
+-- C++ defaults: use clang++ with C++23 for :make
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "cpp", "c" },
+	callback = function()
+		vim.bo.makeprg = "clang++ -std=c++23 -Wall -Wextra -o %:r %"
+	end,
+})
