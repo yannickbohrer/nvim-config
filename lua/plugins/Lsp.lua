@@ -30,6 +30,11 @@ return {
 				map("<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", "Switch Source/Header (C/C++)")
 
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+				-- Let pyright own hover for Python; ruff handles lint/fixes/imports
+				if client and client.name == "ruff" then
+					client.server_capabilities.hoverProvider = false
+				end
 				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
 					local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -94,8 +99,27 @@ return {
 			rust_analyzer = {},
 			ruff = {},
 			pyright = {
+				-- Use the project's virtualenv: $VIRTUAL_ENV, else .venv/ or venv/ in the project root
+				before_init = function(_, config)
+					local root = config.root_dir or vim.fn.getcwd()
+					local candidates = {}
+					if vim.env.VIRTUAL_ENV then
+						table.insert(candidates, vim.env.VIRTUAL_ENV .. "/bin/python")
+					end
+					table.insert(candidates, root .. "/.venv/bin/python")
+					table.insert(candidates, root .. "/venv/bin/python")
+					for _, py in ipairs(candidates) do
+						if vim.fn.executable(py) == 1 then
+							config.settings.python.pythonPath = py
+							return
+						end
+					end
+				end,
 				settings = {
-					pyright = { autoImportCompletion = true },
+					pyright = {
+						autoImportCompletion = true,
+						disableOrganizeImports = true, -- ruff handles import sorting
+					},
 					python = {
 						analysis = {
 							autoSearchPaths = true,

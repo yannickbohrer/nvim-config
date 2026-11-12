@@ -12,6 +12,7 @@ Personal Neovim configuration by Yannick Bohrer. Built on [lazy.nvim](https://gi
 - [Nerd Font](https://www.nerdfonts.com/) (icons throughout the UI)
 - `git`, `make`, `node` (for some Mason packages)
 - Java 21+ (for `jdtls`; detected automatically from `JAVA_HOME` or Homebrew)
+- Python 3 with `venv` + `pip` for Python projects (Debian/Ubuntu: `sudo apt install python3-venv python3-pip python-is-python3`)
 - `go` in PATH is optional — `gopls` skips installation gracefully if absent
 
 ---
@@ -58,6 +59,12 @@ All five languages are verified working: LSP attaches, diagnostics appear, and f
 | Bash       | `bashls`   | `shfmt`              |
 
 Everything is auto-installed by Mason on first launch — no manual steps needed.
+
+### Python virtualenvs
+
+pyright picks the project's interpreter automatically, in this order: `$VIRTUAL_ENV` → `<root>/.venv` → `<root>/venv`. Imports from packages installed in the venv resolve without activating it before launching nvim. pyright reads this at startup, so if you create the venv mid-session, run `:LspRestart`.
+
+pyright and ruff split the work: pyright handles completion, hover, go-to and type checking; ruff handles linting, quick fixes (`<leader>ca`) and import sorting. `ruff_format` formats on save.
 
 **Format-on-save** fires on `BufWritePre`, which covers `:w`, `<C-s>`, and any other write command. Use `<leader>sn` to save without formatting.
 

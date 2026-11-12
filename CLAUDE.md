@@ -59,6 +59,7 @@ Also configured (not primary target languages): `ts_ls`, `denols`, `eslint`, `ta
 
 **Note:** `gopls` will fail to install if `go` is not in PATH — expected, non-fatal.
 **Note:** `pylsp` was removed and replaced with `pyright`. Do not re-add `pylsp`.
+**Note:** pyright auto-detects the project venv in `before_init`: `$VIRTUAL_ENV` → `<root>/.venv` → `<root>/venv`, so imports resolve without activating the venv first. Ruff's hover is disabled on attach (pyright owns hover) and pyright's organize-imports is disabled (ruff owns it).
 **Note:** jdtls requires Java 21+. `env.lua` respects `JAVA_HOME` if set by the shell; otherwise detects homebrew openjdk in descending order (25→21→latest). Do not use Java 17 — jdtls fails at the OSGi bundle level regardless of `--no-validate-java-version`.
 **Note:** In Nvim 0.12+, use `client:supports_method()` (colon syntax). The dot syntax `client.supports_method()` is deprecated. Both `Lsp.lua` and `Autoformatting.lua` use the correct colon form.
 
